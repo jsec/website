@@ -1,0 +1,9 @@
+<!-- Terminal prompt: the site's own `>` marker plus a block cursor.
+     Drawn on a 2-unit grid in a 32 viewBox, so every edge lands on a whole
+     pixel at 16px. Square caps and mitred joins keep the site's zero-radius rule. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <rect width="32" height="32" fill="#121311"/>
+  <path d="M8 9 L14 16 L8 23" fill="none" stroke="#e0a34a" stroke-width="4"
+        stroke-linecap="square" stroke-linejoin="miter"/>
+  <rect x="18" y="18" width="8" height="4" fill="#e0a34a"/>
+</svg>
