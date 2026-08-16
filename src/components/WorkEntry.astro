@@ -1,0 +1,98 @@
+---
+import { render, type CollectionEntry } from "astro:content";
+import { ym, hash } from "../lib/format";
+interface Props { entry: CollectionEntry<"work">; open?: boolean }
+const { entry, open = false } = Astro.props;
+const { company, role, dateStart, dateEnd, stack } = entry.data;
+const { Content } = await render(entry);
+---
+<details open={open}>
+  <summary>
+    <span class="hash accent">{hash(entry.id)}</span>
+    <span class="title">{company}<span class="dim"> — {role}</span></span>
+    <span class="dates dim">{ym(dateStart)} → {ym(dateEnd)}</span>
+  </summary>
+  <div class="detail">
+    <div class="prose"><Content /></div>
+    <div class="stack-tags">{stack.map((s) => <span class="tag">{s}</span>)}</div>
+  </div>
+</details>
+
+<style>
+    details { 
+        border-top: 1px solid var(--rule); 
+    }
+
+    details:last-of-type { 
+        border-bottom: 1px solid var(--rule); 
+    }
+
+    summary {
+        display: grid;
+        grid-template-columns: 9ch minmax(0, 1fr) 20ch;
+        gap: 16px;
+        padding: 12px 8px;
+        cursor: pointer;
+        list-style: none;
+      }
+
+    summary::-webkit-details-marker { 
+        display: none; 
+    }
+
+    summary:hover { 
+        background: var(--bg-hover); 
+    }
+
+    .dates { 
+        text-align: right; 
+    }
+
+    .detail { 
+        padding: 4px 8px 24px 9ch; 
+        display: flex; 
+        flex-direction: column; 
+        gap: 12px; 
+    }
+
+    .prose { 
+        max-width: 76ch; 
+        color: var(--fg-body); 
+    }
+
+    .prose :global(ul) { 
+        margin: 0; 
+        padding-left: 2ch; 
+        list-style: none; 
+    }
+
+    .prose :global(li)::before { 
+        content: "— "; 
+        color: var(--fg-dim); 
+    }
+
+    .stack-tags { 
+        display: flex; 
+        gap: 8px; 
+        flex-wrap: wrap; 
+    }
+
+  @media (max-width: 720px) {
+      summary { 
+          grid-template-columns: 1fr; 
+          gap: 2px; 
+          padding: 10px 4px; 
+          font-size: 14px; 
+      }
+
+      .dates { 
+          text-align: left; 
+          font-size: 12px; 
+      }
+
+      .detail { 
+          padding: 0 4px 16px; 
+          font-size: 13px; 
+      }
+  }
+</style>

@@ -1,0 +1,26 @@
+---
+import { getCollection } from "astro:content";
+import Shell from "../layouts/Shell.astro";
+import WorkEntry from "../components/WorkEntry.astro";
+
+const roles = (await getCollection("work")).sort(
+  (a, b) => +new Date(b.data.dateStart) - +new Date(a.data.dateStart),
+);
+---
+<Shell title="Work" crumb="~/work">
+  <header class="intro">
+    <h1>Work history.</h1>
+    <p class="dim">Where I got paid to build stuff.</p>
+  </header>
+
+  <div class="log">
+    {roles.map((entry, i) => <WorkEntry entry={entry} open={i === 0} />)}
+  </div>
+</Shell>
+
+<style>
+  .intro { display: flex; flex-direction: column; gap: 12px; }
+  .intro p { max-width: 74ch; }
+  .log { display: flex; flex-direction: column; }
+  @media (max-width: 720px) { h1 { font-size: 19px; line-height: 32px; } }
+</style>

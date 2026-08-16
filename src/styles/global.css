@@ -1,150 +1,82 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* One stylesheet. Everything snaps to a 24px baseline and a ch grid. */
+@import "@fontsource/ibm-plex-mono/300.css";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/ibm-plex-mono/500.css";
+@import "@fontsource/ibm-plex-mono/600.css";
 
-@layer base {
-  @font-face {
-    font-family: "Atkinson";
-    src: url("/fonts/atkinson-regular.woff") format("woff");
-    font-weight: 400;
-    font-style: normal;
-    font-display: swap;
-  }
-  
-  @font-face {
-    font-family: "Atkinson";
-    src: url("/fonts/atkinson-bold.woff") format("woff");
-    font-weight: 700;
-    font-style: normal;
-    font-display: swap;
-  }
-}
+:root {
+  --bg: #121311;
+  --bg-panel: #191a17;
+  --bg-code: #1c1d19;
+  --bg-hover: #1f201c;
+  --rule: #33342f;
+  --rule-soft: #262722;
+  --fg: #e3dfd5;
+  --fg-body: #b6b1a6;
+  --fg-dim: #8f8b81;
+  --fg-faint: #6d6a63;
+  --fg-ghost: #605d57;
+  --accent: #e0a34a;
 
-html {
-  overflow-y: scroll;
-  color-scheme: light;
-  background-color: white;
-  font-family: "Atkinson", sans-serif;
-  
-}
+  --lh: 24px;
+  --rail: 30ch;
+  --measure: 80ch;
 
-html.dark {
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
   color-scheme: dark;
-  background-color: black;
 }
 
-html,
-body {
-  @apply h-full w-full antialiased;
-  @apply bg-white dark:bg-black;
-  @apply text-black/75 dark:text-white/75;
-}
+*, *::before, *::after { box-sizing: border-box; }
+
+html { background: var(--bg); }
 
 body {
-  @apply relative flex flex-col;
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 15px;
+  line-height: var(--lh);
+  color: var(--fg);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
 }
 
-main {
-  @apply flex flex-col flex-1 bg-white dark:bg-black;
+h1, h2, h3 { font-weight: 400; margin: 0; line-height: var(--lh); }
+h1 { font-size: 26px; line-height: 40px; }
+h2 { font-size: 17px; font-weight: 500; }
+p { margin: 0; text-wrap: pretty; }
+
+a { color: inherit; text-decoration: none; }
+a:hover { color: var(--bg); background: var(--accent); }
+a:focus-visible { outline: 1px solid var(--accent); outline-offset: 2px; }
+
+::selection { background: var(--accent); color: var(--bg); }
+
+input {
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  border: none;
+  outline: none;
 }
 
-header {
-  @apply border-b;
-  @apply transition-all duration-300 ease-in-out;
+hr { border: none; border-top: 1px solid var(--rule); margin: 0; }
+
+/* Radius is zero, site-wide. Seams stay visible. */
+* { border-radius: 0; }
+
+.dim { color: var(--fg-dim); }
+.accent { color: var(--accent); }
+.stack { display: flex; flex-direction: column; }
+
+.tag {
+  border: 1px solid var(--rule);
+  padding: 0 8px;
+  font-size: 12px;
+  line-height: 20px;
+  color: var(--fg-dim);
 }
+.tag:hover { color: var(--bg); background: var(--accent); border-color: var(--accent); }
 
-header:not(.scrolled) {
-  @apply bg-transparent border-transparent;
-}
-
-header.scrolled {
-  @apply bg-white/75 dark:bg-black/50;
-  @apply border-black/10 dark:border-white/25;
-  @apply backdrop-blur-sm saturate-200;
-}
-
-article {
-  @apply prose dark:prose-invert max-w-full pb-12;
-}
-
-.page-heading {
-  @apply font-semibold text-black dark:text-white;
-}
-
-.blend {
-  @apply transition-all duration-300 ease-in-out;
-}
-
-/** Light theme particles on home page */
-@keyframes animateParticle {
-  from {
-    transform: translateY(0px);
-  }
-  to {
-    transform: translateY(-2000px);
-  }
-}
-
-/** styles for public /animation.js */
-.animate {
-  opacity: 0;
-  transform: translateY(50px);
-  transition: opacity 1s ease, transform 1s ease;
-}
-
-.animate.show {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-article img {
-  padding-top: 20px;
-  padding-bottom: 20px;
-  display: block;
-  margin: 0 auto;
-}
-
-/**
- * TWINKLE STARS
- */
-
- #twinkle-star.template {
-  @apply absolute -left-full; /* hide offscreen */
-}
-
-#twinkle-star.twinkle {
-  @apply animate-twinkle; /* defined in tailwind.config */
-}
-
-
-/**
- * Meteors
- */
-
-#meteors .shower {
-  @apply absolute inset-0 top-0;;
-  @apply left-1/2 -translate-x-1/2;
-  @apply w-screen aspect-square;
-}
-
-#meteors .meteor {
-  @apply animate-meteor; /* defined in tailwind.config */
-  @apply absolute top-1/2 left-1/2 w-px h-[75vh];
-  @apply bg-gradient-to-b from-white to-transparent;
-}
-
-#meteors .shower.ur {
-  @apply rotate-45;
-}
-
-#meteors .shower.dr {
-  @apply rotate-135;
-}
-
-#meteors .shower.dl {
-  @apply rotate-225;
-}
-
-#meteors .shower.ul {
-  @apply rotate-315;
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }

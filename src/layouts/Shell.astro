@@ -1,0 +1,67 @@
+---
+import { SITE, BUILD } from "../consts";
+import Rail from "../components/Rail.astro";
+import "../styles/global.css";
+
+interface Props { title?: string; description?: string; crumb?: string }
+const { title, description = SITE.description, crumb } = Astro.props;
+const path = Astro.url.pathname;
+const full = title ? `${title} — ${SITE.name}` : `${SITE.title} — ${SITE.name}`;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{full}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={new URL(path, Astro.site)} />
+    <link rel="alternate" type="application/rss+xml" title={SITE.name} href="/rss.xml" />
+    <meta property="og:title" content={full} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+  </head>
+  <body>
+    <div class="frame">
+      <Rail path={path}>
+        <slot name="rail" />
+      </Rail>
+
+      <main>
+        {crumb && <span class="crumb dim">{crumb}</span>}
+        <slot />
+        <footer class="mobile-build">build {BUILD.hash}</footer>
+      </main>
+    </div>
+
+    <script src="../scripts/command.ts"></script>
+  </body>
+</html>
+
+<style>
+  .frame {
+    display: grid;
+    grid-template-columns: var(--rail) minmax(0, 1fr);
+    min-height: 100vh;
+    max-width: 1280px;
+    margin: 0 auto;
+    border-inline: 1px solid var(--rule);
+  }
+  main { padding: 40px 48px; display: flex; flex-direction: column; gap: 32px; }
+  .crumb { font-size: 13px; }
+  .mobile-build { display: none; }
+
+  @media (max-width: 720px) {
+    .frame { grid-template-columns: 1fr; border-inline: none; }
+    main { padding: 24px 20px; gap: 24px; }
+    .mobile-build {
+      display: block;
+      margin-top: auto;
+      padding-top: 24px;
+      border-top: 1px solid var(--rule);
+      font-size: 11px;
+      line-height: 20px;
+      color: var(--fg-ghost);
+    }
+  }
+</style>

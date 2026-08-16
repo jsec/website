@@ -1,0 +1,54 @@
+---
+import { ymd } from "../lib/format";
+interface Props { href: string; date: Date; title: string; summary?: string; meta?: string }
+const { href, date, title, summary, meta } = Astro.props;
+---
+<a href={href} class="row">
+  <time class="dim" datetime={ymd(date)}>{ymd(date)}</time>
+  <span class="body">
+    <span>{title}</span>
+    {summary && <span class="summary dim">{summary}</span>}
+  </span>
+  {meta && <span class="meta dim">{meta}</span>}
+</a>
+
+<style>
+  .row {
+    display: grid;
+    grid-template-columns: 12ch minmax(0, 1fr) 10ch;
+    gap: 16px;
+    padding: 12px 8px;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+
+  .row:hover { 
+      background: var(--bg-hover); 
+      color: var(--fg); 
+  }
+
+  .body { 
+      display: flex; 
+      flex-direction: column; 
+      min-width: 0; 
+  }
+
+  .summary { 
+      font-size: 14px; 
+  }
+
+  .meta { 
+      text-align: right; 
+  }
+
+  @media (max-width: 720px) {
+      .row { 
+          grid-template-columns: 1fr; 
+          gap: 2px; 
+          padding: 10px 4px; 
+      }
+      .meta { 
+          text-align: left; 
+          font-size: 12px; 
+      }
+  }
+</style>

@@ -3,6 +3,7 @@ company: "Therigy"
 role: "Senior Software Engineer"
 dateStart: "10/18/2021"
 dateEnd: "05/12/2023"
+stack: ["JavaScript", "React", "Angular.js", "Express", "PHP", "MySQL", "Serverless Framework", "AWS"]
 ---
 
 - Designed, implemented, and maintained cloud-nave JavaScript microservices to support integrations between the Therigy application, electronic health record systems, and medication dispensing systems.

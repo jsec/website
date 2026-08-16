@@ -1,0 +1,75 @@
+---
+interface Props { placeholder?: string }
+const { placeholder = "go work · find fhir · help" } = Astro.props;
+---
+<form class="prompt" action="/search" method="get" data-command>
+  <span class="accent" aria-hidden="true">&gt;</span>
+  <input
+    type="search"
+    name="q"
+    autocomplete="off"
+    spellcheck="false"
+    placeholder={placeholder}
+    aria-label="Command or search"
+  />
+  <span class="hint">press /</span>
+</form>
+<ul class="hits" data-command-hits hidden></ul>
+
+<style>
+  .prompt {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--bg-code);
+    border: 1px solid var(--rule);
+    padding: 8px 16px;
+  }
+
+  .prompt:focus-within { 
+      border-color: var(--accent); 
+  }
+
+  input { 
+      flex: 1; 
+      min-width: 0; 
+  }
+
+  input::-webkit-search-cancel-button { 
+      display: none; 
+  }
+
+  .hint { 
+      font-size: 12px; 
+      line-height: 20px; 
+      color: var(--fg-faint); 
+  }
+
+  .hits { 
+      list-style: none; 
+      margin: 0; 
+      padding: 0; 
+  }
+
+  .hits :global(li) { 
+      display: flex; 
+      gap: 16px; 
+      font-size: 14px; 
+      padding: 2px 16px; 
+  }
+
+  .hits :global(li .kind) { 
+      color: var(--accent); 
+      width: 9ch; 
+  }
+
+  .hits :global(li .label) { 
+      color: var(--fg-body); 
+  }
+
+  @media (max-width: 720px) { 
+      .hint { 
+          display: none; 
+      } 
+  }
+</style>

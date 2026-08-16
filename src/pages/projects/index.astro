@@ -1,28 +1,51 @@
 ---
-import { getCollection } from "astro:content"
-import PageLayout from "@layouts/PageLayout.astro"
-import TopLayout from "@layouts/TopLayout.astro"
-import BottomLayout from "@layouts/BottomLayout.astro"
-import Projects from "@components/Projects"
-import { PROJECTS } from "@consts"
+import { getCollection } from "astro:content";
+import Shell from "../../layouts/Shell.astro";
+import { ym } from "../../lib/format";
 
-const projects = (await getCollection("projects"))
-  .filter(project => !project.data.draft)
-  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
-
-const tags = [...new Set(projects.flatMap(project => project.data.tags))]
-  .sort((a, b) => a.localeCompare(b))
+const projects = (await getCollection("projects", (p) => !p.data.draft)).sort(
+  (a, b) => +b.data.date - +a.data.date,
+);
 ---
+<Shell title="Projects" crumb="~/projects">
+    <header class="intro">
+        <h1>Pet projects.</h1>
+        <p class="dim">When I don't get paid to build stuff.</p>
+    </header>
 
-<PageLayout title={PROJECTS.TITLE} description={PROJECTS.DESCRIPTION}>
-  <TopLayout>
-    <div class="animate page-heading">
-      {PROJECTS.TITLE}
-    </div>
-  </TopLayout>
-  <BottomLayout>
-    <div class="animate">
-      <Projects client:load tags={tags} data={projects} />
-    </div>
-  </BottomLayout>
-</PageLayout>
+  {projects.map((p) => (
+    <article class="project">
+      <div class="head">
+        <h2>{p.data.title}</h2>
+        <span class="dim">{ym(p.data.date)} · {p.data.status}</span>
+      </div>
+      <p class="dim summary">{p.data.summary}</p>
+      <dl class="facts">
+        {Object.entries(p.data.facts).map(([k, v]) => (
+          <><dt class="dim">{k}</dt><dd>{v}</dd></>
+        ))}
+      </dl>
+      <div class="links">
+        {p.data.repo && <a href={p.data.repo} class="accent">source →</a>}
+        {p.data.demo && <a href={p.data.demo} class="accent">live →</a>}
+      </div>
+    </article>
+  ))}
+</Shell>
+
+<style>
+  .project {
+    display: flex; flex-direction: column; gap: 16px;
+    border: 1px solid var(--rule); background: var(--bg-panel); padding: 24px;
+  }
+  .head { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; }
+  h2 { font-size: 19px; }
+  .summary { max-width: 74ch; }
+  .facts {
+    display: grid; grid-template-columns: 14ch minmax(0, 1fr); gap: 0 16px; margin: 0;
+    border-top: 1px solid var(--rule); padding-top: 16px; font-size: 14px;
+  }
+  .facts dd { margin: 0; }
+  .links { display: flex; gap: 24px; font-size: 14px; }
+  @media (max-width: 720px) { .project { padding: 16px; } .facts { grid-template-columns: 11ch 1fr; } }
+</style>

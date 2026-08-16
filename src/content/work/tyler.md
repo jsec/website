@@ -3,6 +3,7 @@ company: "Tyler Technologies"
 role: "Senior Software Engineer"
 dateStart: "01/08/2019"
 dateEnd: "10/04/2021"
+stack: ["TypeScript", "Angular", "Angular.js", "C#", "Microsoft SQL Server"]
 ---
 
 - Developed and maintained a hybrid Angular application for maintenance of law enforcement records.

@@ -3,6 +3,7 @@ company: "Ancor Automotive"
 role: "Software Developer"
 dateStart: "10/30/2016"
 dateEnd: "06/03/2017"
+stack: ["ASP.NET", "C#", "JavaScript"]
 ---
 
 - Developed and maintained an ASP.NET web application for searching and viewing vehicle

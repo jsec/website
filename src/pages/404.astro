@@ -1,0 +1,36 @@
+---
+import Shell from "../layouts/Shell.astro";
+---
+<Shell title="404" crumb="~/404">
+  <div class="term">
+    <div><span class="accent">$</span> cat <span id="path">{"{path}"}</span></div>
+    <div class="dim">cat: <span id="path-echo">{"{path}"}</span>: No such file or directory</div>
+  </div>
+
+  <p class="dim lead">Either I moved it or you typed it. Both are recoverable.</p>
+
+  <div class="options">
+    <a href="/"><span class="dim">cd ~</span><span>home</span></a>
+    <a href="/search"><span class="dim">grep -r</span><span>search everything</span></a>
+    <a href="/blog"><span class="dim">ls blog/</span><span>recent writing</span></a>
+  </div>
+
+  <script is:inline>
+    const p = location.pathname;
+    for (const id of ["path", "path-echo"]) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = p;
+    }
+  </script>
+</Shell>
+
+<style>
+  .term { display: flex; flex-direction: column; gap: 8px; }
+  .lead { max-width: 70ch; }
+  .options { display: flex; flex-direction: column; border-top: 1px solid var(--rule); max-width: 60ch; }
+  .options a {
+    display: grid; grid-template-columns: 14ch minmax(0, 1fr); gap: 8px;
+    padding: 6px 0; border-bottom: 1px solid var(--rule-soft);
+  }
+  .options a:hover span { color: var(--bg); }
+</style>

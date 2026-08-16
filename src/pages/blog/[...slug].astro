@@ -1,35 +1,15 @@
 ---
-import { type CollectionEntry, getCollection } from "astro:content"
-import PageLayout from "@layouts/PageLayout.astro"
-import TopLayout from "@layouts/TopLayout.astro"
-import BottomLayout from "@layouts/BottomLayout.astro"
-import ArticleTopLayout from "@layouts/ArticleTopLayout.astro"
-import ArticleBottomLayout from "@layouts/ArticleBottomLayout.astro"
+import { getCollection, render } from "astro:content";
+import Post from "../../layouts/Post.astro";
 
-// Create the static blog pages
 export async function getStaticPaths() {
-	const posts = await getCollection("blog", ({ data }) => !data.draft)
-	return posts.map((post) => ({
-		params: { slug: post.slug },
-		props: post,
-	}))
+  const posts = await getCollection("blog", (p) => !p.data.draft);
+  return posts.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
 }
 
-// Get the requested post
-type Props = CollectionEntry<"blog">
-const post = Astro.props
-const { title, summary } = post.data
+const { entry } = Astro.props;
+const { Content, headings } = await render(entry);
 ---
-
-<PageLayout title={title} description={summary}>
-  <TopLayout>
-    <div class="animate">
-      <ArticleTopLayout entry={post}/>
-    </div>
-  </TopLayout>
-  <BottomLayout>
-    <div class="animate">
-      <ArticleBottomLayout entry={post} />
-    </div>
-  </BottomLayout>
-</PageLayout>
+<Post entry={entry} headings={headings}>
+  <Content />
+</Post>

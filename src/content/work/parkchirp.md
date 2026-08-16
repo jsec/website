@@ -2,7 +2,8 @@
 company: "ParkChirp"
 role: "Senior Software Developer"
 dateStart: "08/26/2024"
-dateEnd: "Now"
+dateEnd: "06/30/2026"
+stack: ["TypeScript", "Python", "Serverless Framework", "Apollo GraphQL", "Terraform", "Next.js", "AWS"]
 ---
 
 Developing and maintaining a SaaS solution for parking management operations, including billing, lease management, payment collection, and reporting.

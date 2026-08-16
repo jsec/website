@@ -1,30 +1,26 @@
-import rss from "@astrojs/rss"
-import { getCollection } from "astro:content"
-import { SITE } from "@consts"
+import rss from "@astrojs/rss";
+import type { APIContext } from "astro";
+import { getCollection } from "astro:content";
+import { SITE } from "../consts";
 
-type Context = {
-  site: string
-}
-
-export async function GET(context: Context) {
-	const posts = await getCollection("blog")
-  const projects = await getCollection("projects")
-
-  const items = [...posts, ...projects]
-
-  items.sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime())
+export async function GET(context: APIContext) {
+  const posts = (await getCollection("blog", (p) => !p.data.draft)).sort(
+    (a, b) => +b.data.date - +a.data.date,
+  );
 
   return rss({
-    title: SITE.TITLE,
-    description: SITE.DESCRIPTION,
-    site: context.site,
-    items: items.map((item) => ({
-      title: item.data.title,
-      description: item.data.summary,
-      pubDate: item.data.date,
-      link: item.slug.startsWith("blog")
-        ? `/blog/${item.slug}/`
-        : `/projects/${item.slug}/`,
+    title: `${SITE.title} — ${SITE.name}`,
+    description: SITE.description,
+    site: context.site!,
+    trailingSlash: false,
+    items: posts.map((p) => ({
+      title: p.data.title,
+      description: p.data.summary,
+      pubDate: p.data.date,
+      categories: p.data.tags,
+      link: `/blog/${p.id}`,
     })),
-  })
+    customData: "<language>en-us</language>",
+    stylesheet: "/rss.xsl",
+  });
 }

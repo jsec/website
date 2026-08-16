@@ -3,6 +3,7 @@ company: "eFlex Systems"
 role: "Senior Software Developer"
 dateStart: "12/18/2012"
 dateEnd: "10/01/2016"
+stack: ["CoffeeScript", "Ember.js", "Koa.js", "MongoDB", "Redis", "C++"]
 ---
 
 - Developed and maintained an Ember.js application for interfacing with programmable logic controls on an automotive plant floor.

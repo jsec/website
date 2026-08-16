@@ -1,0 +1,55 @@
+---
+import { getCollection } from "astro:content";
+import Shell from "../../../layouts/Shell.astro";
+import PostRow from "../../../components/PostRow.astro";
+
+export async function getStaticPaths() {
+  const posts = await getCollection("blog", (p) => !p.data.draft);
+  const tags = [...new Set(posts.flatMap((p) => p.data.tags))];
+  return tags.map((tag) => ({
+    params: { tag },
+    props: {
+      tag,
+      posts: posts
+        .filter((p) => p.data.tags.includes(tag))
+        .sort((a, b) => +b.data.date - +a.data.date),
+      all: Object.entries(
+        posts.flatMap((p) => p.data.tags).reduce<Record<string, number>>((acc, t) => {
+          acc[t] = (acc[t] ?? 0) + 1;
+          return acc;
+        }, {}),
+      ).sort((a, b) => b[1] - a[1]),
+    },
+  }));
+}
+
+const { tag, posts, all } = Astro.props;
+---
+<Shell title={`#${tag}`} description={`Posts tagged ${tag}`} crumb={`~/blog/tag/${tag}`}>
+  <div slot="rail" class="rail-extra tags">
+    <span class="label">all tags</span>
+    {all.map(([t, n]) => (
+      <a href={`/blog/tag/${t}`} class:list={{ on: t === tag }}>{t} ({n})</a>
+    ))}
+  </div>
+
+  <header class="intro">
+    <h1><span class="dim">grep -l</span> {tag}</h1>
+    <span class="dim count">{posts.length} match{posts.length === 1 ? "" : "es"}</span>
+  </header>
+
+  <div class="results">
+    {posts.map((p) => (
+      <PostRow href={`/blog/${p.id}`} date={p.data.date} title={p.data.title} summary={p.data.summary} />
+    ))}
+  </div>
+</Shell>
+
+<style>
+  .tags { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--fg-body); }
+  .tags .on { color: var(--bg); background: var(--accent); padding: 0 4px; align-self: flex-start; }
+  .label { color: var(--fg-faint); letter-spacing: 0.08em; text-transform: uppercase; font-size: 12px; line-height: 20px; }
+  .intro { display: flex; flex-direction: column; gap: 8px; }
+  .count { font-size: 14px; }
+  .results { display: flex; flex-direction: column; border-top: 1px solid var(--rule); }
+</style>

@@ -1,0 +1,72 @@
+---
+import type { CollectionEntry } from "astro:content";
+import Shell from "./Shell.astro";
+import { ymd, readingTime } from "../lib/format";
+
+interface Props { entry: CollectionEntry<"blog">; headings: { slug: string; text: string; depth: number }[] }
+const { entry, headings } = Astro.props;
+const { title, summary, date, tags } = entry.data;
+---
+<Shell title={title} description={summary} crumb={`~/blog/${entry.id}`}>
+  <nav slot="rail" class="toc rail-extra">
+    <span class="label">contents</span>
+    {headings.filter((h) => h.depth === 2).map((h) => (
+      <a href={`#${h.slug}`}>{h.text}</a>
+    ))}
+  </nav>
+
+  <header>
+    <h1>{title}</h1>
+    <div class="meta dim">
+      <time datetime={ymd(date)}>{ymd(date)}</time>
+      <span>{readingTime(entry.body ?? "")}</span>
+      <span>{tags.join(" · ")}</span>
+    </div>
+  </header>
+
+  <article class="prose">
+    <slot />
+  </article>
+
+  <div class="tags">
+    {tags.map((t) => <a href={`/blog/tag/${t}`} class="tag">{t}</a>)}
+  </div>
+</Shell>
+
+<style>
+  .toc { display: flex; flex-direction: column; gap: 4px; font-size: 13px; }
+  .label { color: var(--fg-faint); letter-spacing: 0.08em; text-transform: uppercase; }
+  .toc a { color: var(--fg-body); }
+
+  header { display: flex; flex-direction: column; gap: 12px; border-bottom: 1px solid var(--rule); padding-bottom: 24px; }
+  .meta { display: flex; gap: 24px; font-size: 13px; }
+
+  .prose { display: flex; flex-direction: column; gap: 24px; max-width: var(--measure); color: var(--fg-body); }
+  .prose :global(h2) { color: var(--fg); margin-top: 16px; scroll-margin-top: 24px; }
+  .prose :global(strong), .prose :global(code) { color: var(--fg); font-weight: 400; }
+  .prose :global(a) { color: var(--accent); }
+  .prose :global(ul) { margin: 0; padding-left: 3ch; }
+  .prose :global(blockquote) {
+    margin: 0; padding-left: 3ch; border-left: 1px solid var(--rule); color: var(--fg-dim);
+  }
+  .prose :global(pre) {
+    margin: 0;
+    padding: 16px 20px;
+    background: var(--bg-code) !important;
+    border: 1px solid var(--rule);
+    overflow-x: auto;
+    font-size: 14px;
+    line-height: var(--lh);
+  }
+  .tags { display: flex; gap: 8px; flex-wrap: wrap; border-top: 1px solid var(--rule); padding-top: 24px; }
+
+  /* Narrow: prose keeps its margin, code goes full-bleed. */
+  @media (max-width: 720px) {
+    .prose :global(pre) {
+      margin-inline: -20px;
+      border-inline: none;
+      font-size: 12px;
+      line-height: 20px;
+    }
+  }
+</style>
