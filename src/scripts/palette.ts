@@ -1,7 +1,6 @@
-export {};
+import type { SearchEntry } from "../pages/search.json";
 
-type Entry = { file: string; href: string; lines: string[] };
-type Group = { file: Entry; lines: { n: number; text: string }[] };
+type Group = { file: SearchEntry; lines: { n: number; text: string }[] };
 
 const scrim = document.querySelector<HTMLElement>("[data-palette]")!;
 const input = scrim.querySelector<HTMLInputElement>("[data-palette-input]")!;
@@ -9,8 +8,9 @@ const empty = scrim.querySelector<HTMLElement>("[data-palette-empty]")!;
 const none = scrim.querySelector<HTMLElement>("[data-palette-none]")!;
 const list = scrim.querySelector<HTMLElement>("[data-palette-groups]")!;
 const count = scrim.querySelector<HTMLElement>("[data-palette-count]")!;
+const closeButton = scrim.querySelector<HTMLElement>("[data-palette-close]")!;
 
-let index: Entry[] = [];
+let index: SearchEntry[] = [];
 let groups: Group[] = [];
 let sel = 0;
 
@@ -31,6 +31,7 @@ const snippet = (text: string, q: string) => {
     out += esc(t.slice(i, j)) + `<mark>${esc(t.slice(j, j + q.length))}</mark>`;
     i = j + q.length;
   }
+
   return out + esc(t.slice(i));
 };
 
@@ -42,9 +43,13 @@ const render = () => {
     for (const file of index) {
       const lines = [];
       for (const [i, text] of file.lines.entries()) {
-        if (text.toLowerCase().includes(q)) lines.push({ n: i + 1, text });
+        if (text.toLowerCase().includes(q)) {
+          lines.push({ n: i + 1, text });
+        }
       }
-      if (lines.length) groups.push({ file, lines });
+      if (lines.length) {
+        groups.push({ file, lines });
+      }
     }
   }
 
@@ -59,10 +64,13 @@ const render = () => {
       </a>`)
     .join("");
 
-  const matches = groups.reduce((n, g) => n + g.lines.length, 0);
-  count.textContent = groups.length
-    ? `${matches} ${matches === 1 ? "match" : "matches"} in ${groups.length} ${groups.length === 1 ? "file" : "files"}`
-    : "";
+  count.textContent = "";
+  if (groups.length) {
+    const matches = groups.reduce((n, g) => n + g.lines.length, 0);
+    const matchWord = matches === 1 ? "match" : "matches";
+    const fileWord = groups.length === 1 ? "file" : "files";
+    count.textContent = `${matches} ${matchWord} in ${groups.length} ${fileWord}`;
+  }
 };
 
 const select = (i: number) => {
@@ -75,40 +83,76 @@ const open = async () => {
   scrim.hidden = false;
   input.focus();
   input.select();
-  if (!index.length) index = await (await fetch("/search.json")).json();
+  if (!index.length) {
+    index = (await (await fetch("/search.json")).json()) as SearchEntry[];
+  }
+
   render();
 };
 
 const close = () => { scrim.hidden = true; };
 
 document.querySelectorAll("[data-palette-open]").forEach((b) => b.addEventListener("click", open));
-scrim.querySelector("[data-palette-close]")!.addEventListener("click", close);
+closeButton.addEventListener("click", close);
 
 scrim.addEventListener("click", (e) => {
-  const t = e.target as HTMLElement;
-  if (t === scrim) return close();
-  const q = t.closest<HTMLElement>("[data-q]");
-  if (q) { input.value = q.dataset.q!; input.focus(); render(); return; }
-  if (t.closest(".group")) close();
+  if (!(e.target instanceof Element)) {
+    return;
+  }
+
+  if (e.target === scrim) {
+    close();
+    return;
+  }
+
+  const suggestion = e.target.closest<HTMLElement>("[data-q]");
+  if (suggestion) {
+    input.value = suggestion.dataset.q!;
+    input.focus();
+    render();
+    return;
+  }
+
+  if (e.target.closest(".group")) {
+    close();
+  }
 });
 
 list.addEventListener("mouseover", (e) => {
-  const g = (e.target as HTMLElement).closest<HTMLElement>(".group");
-  if (g && Number(g.dataset.i) !== sel) select(Number(g.dataset.i));
+  if (!(e.target instanceof Element)) {
+    return;
+  }
+
+  const group = e.target.closest<HTMLElement>(".group");
+  if (group && Number(group.dataset.i) !== sel) {
+    select(Number(group.dataset.i));
+  }
 });
 
 input.addEventListener("input", render);
 
 input.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") { e.preventDefault(); close(); }
-  else if (e.key === "ArrowDown") { e.preventDefault(); select(Math.max(0, Math.min(sel + 1, groups.length - 1))); }
-  else if (e.key === "ArrowUp") { e.preventDefault(); select(Math.max(sel - 1, 0)); }
-  else if (e.key === "Enter" && groups[sel]) { e.preventDefault(); close(); location.href = groups[sel].file.href; }
+  if (e.key === "Escape") {
+    e.preventDefault();
+    close();
+  } else if (e.key === "ArrowDown") {
+    e.preventDefault();
+    select(Math.max(0, Math.min(sel + 1, groups.length - 1)));
+  } else if (e.key === "ArrowUp") {
+    e.preventDefault();
+    select(Math.max(sel - 1, 0));
+  } else if (e.key === "Enter" && groups[sel]) {
+    e.preventDefault();
+    close();
+    location.href = groups[sel].file.href;
+  }
 });
 
 document.addEventListener("keydown", (e) => {
-  const t = e.target as HTMLElement;
-  const typing = t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable;
+  const typing =
+    e.target instanceof HTMLInputElement ||
+    e.target instanceof HTMLTextAreaElement ||
+    (e.target instanceof HTMLElement && e.target.isContentEditable);
   if ((e.key === "/" && !typing) || ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k")) {
     e.preventDefault();
     open();

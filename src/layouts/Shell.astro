@@ -8,7 +8,13 @@ interface Props { title?: string; description?: string }
 const { title, description = SITE.description } = Astro.props;
 const path = Astro.url.pathname;
 const full = `${title ?? SITE.title} — ${SITE.name}`;
-const active = (p: string) => (p === "/" ? path === "/" : path.startsWith(p));
+const active = (p: string) => {
+  if (p === "/") {
+    return path === "/";
+  }
+
+  return path.startsWith(p);
+};
 ---
 <!doctype html>
 <html lang="en">

@@ -2,7 +2,13 @@
 import { SITE, NAV } from "../consts";
 interface Props { path: string }
 const { path } = Astro.props;
-const active = (p: string) => (p === "/" ? path === "/" : path.startsWith(p));
+const active = (p: string) => {
+  if (p === "/") {
+    return path === "/";
+  }
+
+  return path.startsWith(p);
+};
 ---
 <aside class="sidebar">
   <div class="id">

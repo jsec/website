@@ -1,12 +1,23 @@
 import type { APIRoute } from "astro";
 import { getCollection } from "astro:content";
 
+export type SearchEntry = { file: string; href: string; lines: string[] };
+
 // Markdown body → plain lines: drop blanks and headings, strip list markers.
-const textLines = (body = "") =>
-  body.split("\n").map((l) => l.trim().replace(/^[-*] /, "")).filter((l) => l && !l.startsWith("#"));
+const textLines = (body = "") => {
+  const lines = [];
+  for (const raw of body.split("\n")) {
+    const line = raw.trim().replace(/^[-*] /, "");
+    if (line && !line.startsWith("#")) {
+      lines.push(line);
+    }
+  }
+
+  return lines;
+};
 
 export const GET: APIRoute = async () => {
-  const files = [];
+  const files: SearchEntry[] = [];
 
   const work = (await getCollection("work")).sort((a, b) => +b.data.dateStart - +a.data.dateStart);
   for (const w of work) {
