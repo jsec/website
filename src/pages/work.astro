@@ -1,26 +1,34 @@
 ---
 import { getCollection } from "astro:content";
 import Shell from "../layouts/Shell.astro";
+import Prompt from "../components/Prompt.astro";
 import WorkEntry from "../components/WorkEntry.astro";
 
-const roles = (await getCollection("work")).sort(
-  (a, b) => +new Date(b.data.dateStart) - +new Date(a.data.dateStart),
-);
+const roles = (await getCollection("work")).sort((a, b) => +b.data.dateStart - +a.data.dateStart);
 ---
-<Shell title="Work" crumb="~/work">
-  <header class="intro">
-    <h1>Work history.</h1>
-    <p class="dim">Where I got paid to build stuff.</p>
-  </header>
+<Shell title="Work">
+  <section class="block">
+    <Prompt cwd="~/work" cmd="git log --graph" />
+    <p class="sans intro">Where I got paid to build stuff. Newest first; select a commit to expand it.</p>
+  </section>
 
   <div class="log">
-    {roles.map((entry, i) => <WorkEntry entry={entry} open={i === 0} />)}
+    {roles.map((entry, i) => <WorkEntry entry={entry} open={i < 2} head={i === 0} />)}
   </div>
+
+  <script>
+    // Search results link to /work#<id>; open that entry.
+    const openHash = () => {
+      const d = document.getElementById(decodeURIComponent(location.hash.slice(1)));
+      if (d instanceof HTMLDetailsElement) { d.open = true; d.scrollIntoView(); }
+    };
+    openHash();
+    addEventListener("hashchange", openHash);
+  </script>
 </Shell>
 
 <style>
-  .intro { display: flex; flex-direction: column; gap: 12px; }
-  .intro p { max-width: 74ch; }
-  .log { display: flex; flex-direction: column; }
-  @media (max-width: 720px) { h1 { font-size: 19px; line-height: 32px; } }
+  .block { display: flex; flex-direction: column; gap: 12px; }
+  .intro { font-size: 16px; line-height: 26px; color: var(--body); }
+  .log { display: flex; flex-direction: column; margin-top: -16px; }
 </style>

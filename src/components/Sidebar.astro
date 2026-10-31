@@ -1,0 +1,64 @@
+---
+import { SITE, NAV } from "../consts";
+interface Props { path: string }
+const { path } = Astro.props;
+const active = (p: string) => (p === "/" ? path === "/" : path.startsWith(p));
+---
+<aside class="sidebar">
+  <div class="id">
+    <a href="/">{SITE.name}</a>
+    <span class="dim small">jarrod seccombe</span>
+  </div>
+
+  <nav>
+    {NAV.map((item) => (
+      <a href={item.path} class:list={{ on: active(item.path) }}>{active(item.path) ? "› " : "  "}{item.label}</a>
+    ))}
+  </nav>
+
+  <button class="grep" data-palette-open><span>grep…</span><span class="faint">/</span></button>
+
+  <div class="bottom">
+    <a href={`mailto:${SITE.email}`}>email</a>
+    <a href={SITE.github} target="_blank" rel="noopener noreferrer">github</a>
+    <a href={SITE.linkedin} target="_blank" rel="noopener noreferrer">linkedin</a>
+    <a href="/rss.xml">rss</a>
+    <button class="theme" data-theme-toggle aria-label="Toggle theme">export THEME=<span class="theme-name"></span></button>
+  </div>
+</aside>
+
+<style>
+  .sidebar {
+    flex: 0 0 27ch;
+    box-sizing: content-box;
+    position: sticky;
+    top: 0;
+    min-height: calc(100vh - 80px);
+    padding: 48px 0 32px 36px;
+    display: flex;
+    flex-direction: column;
+    gap: 36px;
+  }
+  .id { display: flex; flex-direction: column; }
+  .id a { font-weight: 500; }
+  .small { font-size: 13px; }
+  nav { display: flex; flex-direction: column; }
+  nav a { padding: 2px 0; white-space: pre; color: var(--dim); }
+  nav a.on { color: var(--acc); }
+  .grep {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1ch;
+    margin-right: 24px;
+    padding: 4px 10px;
+    border: 1px solid var(--rule);
+    color: var(--dim);
+    font-size: 13px;
+  }
+  .faint { color: var(--faint); }
+  .bottom { margin-top: auto; display: flex; flex-direction: column; font-size: 13px; color: var(--dim); }
+  .theme { margin-top: 16px; }
+
+  @media (max-width: 759px) { .sidebar { display: none; } }
+</style>

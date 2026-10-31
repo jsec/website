@@ -1,12 +1,14 @@
 ---
-import { SITE, BUILD } from "../consts";
-import Rail from "../components/Rail.astro";
+import { SITE, NAV } from "../consts";
+import Sidebar from "../components/Sidebar.astro";
+import SearchPalette from "../components/SearchPalette.astro";
 import "../styles/global.css";
 
-interface Props { title?: string; description?: string; crumb?: string }
-const { title, description = SITE.description, crumb } = Astro.props;
+interface Props { title?: string; description?: string }
+const { title, description = SITE.description } = Astro.props;
 const path = Astro.url.pathname;
-const full = title ? `${title} — ${SITE.name}` : `${SITE.title} — ${SITE.name}`;
+const full = `${title ?? SITE.title} — ${SITE.name}`;
+const active = (p: string) => (p === "/" ? path === "/" : path.startsWith(p));
 ---
 <!doctype html>
 <html lang="en">
@@ -21,48 +23,105 @@ const full = title ? `${title} — ${SITE.name}` : `${SITE.title} — ${SITE.nam
     <meta property="og:title" content={full} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet" />
+    <script is:inline>
+      try {
+        const t = localStorage.getItem("theme");
+        if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;
+      } catch {}
+    </script>
   </head>
   <body>
-    <div class="frame">
-      <Rail path={path}>
-        <slot name="rail" />
-      </Rail>
+    <Sidebar path={path} />
 
-      <main>
-        {crumb && <span class="crumb dim">{crumb}</span>}
+    <header class="mobile">
+      <div class="row">
+        <a href="/" class="home">{SITE.name}</a>
+        <button class="grep" data-palette-open aria-label="Search">grep…</button>
+        <button class="theme" data-theme-toggle aria-label="Toggle theme"><span class="theme-name"></span></button>
+      </div>
+      <nav>
+        {NAV.map((item) => (
+          <a href={item.path} class:list={{ on: active(item.path) }}>{item.label}</a>
+        ))}
+      </nav>
+    </header>
+
+    <main>
+      <div class="column">
         <slot />
-        <footer class="mobile-build">build {BUILD.hash}</footer>
-      </main>
-    </div>
+      </div>
+      <footer class="mobile">
+        <a href={`mailto:${SITE.email}`}>email</a>
+        <a href={SITE.github} target="_blank" rel="noopener noreferrer">github</a>
+        <a href={SITE.linkedin} target="_blank" rel="noopener noreferrer">linkedin</a>
+        <a href="/rss.xml">rss</a>
+      </footer>
+    </main>
 
-    <script src="../scripts/command.ts"></script>
+    <SearchPalette />
+
+    <script>
+      for (const b of document.querySelectorAll("[data-theme-toggle]")) {
+        b.addEventListener("click", () => {
+          const next = document.documentElement.dataset.theme === "light" ? "dark" : "light";
+          document.documentElement.dataset.theme = next;
+          try { localStorage.setItem("theme", next); } catch {}
+        });
+      }
+    </script>
   </body>
 </html>
 
 <style>
-  .frame {
-    display: grid;
-    grid-template-columns: var(--rail) minmax(0, 1fr);
-    min-height: 100vh;
-    max-width: 1280px;
-    margin: 0 auto;
-    border-inline: 1px solid var(--rule);
-  }
-  main { padding: 40px 48px; display: flex; flex-direction: column; gap: 32px; }
-  .crumb { font-size: 13px; }
-  .mobile-build { display: none; }
+  body { display: flex; align-items: flex-start; }
+  main { flex: 1 1 520px; min-width: 0; padding: 48px 36px 96px 24px; }
+  .column { max-width: 88ch; display: flex; flex-direction: column; gap: 40px; }
+  .mobile { display: none; }
 
-  @media (max-width: 720px) {
-    .frame { grid-template-columns: 1fr; border-inline: none; }
-    main { padding: 24px 20px; gap: 24px; }
-    .mobile-build {
-      display: block;
-      margin-top: auto;
-      padding-top: 24px;
-      border-top: 1px solid var(--rule);
-      font-size: 11px;
-      line-height: 20px;
-      color: var(--fg-ghost);
+  @media (max-width: 759px) {
+    body { flex-direction: column; align-items: stretch; }
+    main { padding: 28px 20px 32px; }
+
+    header.mobile {
+      display: flex;
+      flex-direction: column;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--bg);
+      border-bottom: 1px solid var(--rule);
+      padding: 8px 20px 0;
     }
+    .row { display: flex; align-items: center; gap: 16px; }
+    .home { font-weight: 500; min-height: 44px; display: flex; align-items: center; }
+    .grep {
+      margin-left: auto;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      border: 1px solid var(--rule);
+      color: var(--dim);
+      font-size: 13px;
+    }
+    .theme { min-height: 44px; color: var(--dim); font-size: 13px; }
+    nav { display: flex; gap: 3ch; overflow-x: auto; }
+    nav a { min-height: 44px; display: flex; align-items: center; white-space: nowrap; color: var(--dim); }
+    nav a.on { color: var(--acc); box-shadow: inset 0 -2px 0 var(--acc); }
+
+    footer.mobile {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 3ch;
+      margin-top: 56px;
+      padding-top: 16px;
+      border-top: 1px solid var(--rule);
+      font-size: 13px;
+      color: var(--dim);
+    }
+    footer a { min-height: 44px; display: flex; align-items: center; }
   }
 </style>

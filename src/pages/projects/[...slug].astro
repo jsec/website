@@ -1,6 +1,7 @@
 ---
 import { getCollection, render } from "astro:content";
 import Shell from "../../layouts/Shell.astro";
+import Prompt from "../../components/Prompt.astro";
 import { ym } from "../../lib/format";
 
 export async function getStaticPaths() {
@@ -11,16 +12,21 @@ export async function getStaticPaths() {
 const { entry } = Astro.props;
 const { Content } = await render(entry);
 ---
-<Shell title={entry.data.title} description={entry.data.summary} crumb={`~/projects/${entry.id}`}>
-  <header class="intro">
-    <h1>{entry.data.title}</h1>
-    <span class="dim">{ym(entry.data.date)} · {entry.data.status}</span>
-  </header>
-  <article class="prose"><Content /></article>
+<Shell title={entry.data.title} description={entry.data.summary}>
+  <div class="page">
+    <Prompt cwd="~/projects" cmd={`cat ${entry.id}/README`} />
+    <header>
+      <span class="name">{entry.data.title}</span>
+      <span class="dim">{ym(entry.data.date)} · {entry.data.status}</span>
+    </header>
+    <article class="sans"><Content /></article>
+    <Prompt cwd="~/projects"><a href="/projects" class="dim">cd ..</a></Prompt>
+  </div>
 </Shell>
 
 <style>
-  .intro { display: flex; flex-direction: column; gap: 8px; border-bottom: 1px solid var(--rule); padding-bottom: 24px; }
-  .prose { display: flex; flex-direction: column; gap: 24px; max-width: var(--measure); color: var(--fg-body); }
-  .prose :global(pre) { padding: 16px 20px; background: var(--bg-code) !important; border: 1px solid var(--rule); overflow-x: auto; font-size: 14px; }
+  .page { display: flex; flex-direction: column; gap: 28px; }
+  header { display: flex; justify-content: space-between; gap: 16px; padding-bottom: 20px; border-bottom: 1px solid var(--rule); }
+  .name { font-weight: 500; }
+  article { max-width: 68ch; display: flex; flex-direction: column; gap: 20px; font-size: 16px; line-height: 26px; color: var(--body); }
 </style>

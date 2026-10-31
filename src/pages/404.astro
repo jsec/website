@@ -1,36 +1,26 @@
 ---
 import Shell from "../layouts/Shell.astro";
+import Prompt from "../components/Prompt.astro";
 ---
-<Shell title="404" crumb="~/404">
-  <div class="term">
-    <div><span class="accent">$</span> cat <span id="path">{"{path}"}</span></div>
-    <div class="dim">cat: <span id="path-echo">{"{path}"}</span>: No such file or directory</div>
-  </div>
+<Shell title="404">
+  <section class="block">
+    <Prompt cwd="~"><span>cat <span data-path>{"{path}"}</span></span></Prompt>
+    <span class="dim">cat: <span data-path>{"{path}"}</span>: No such file or directory</span>
+    <p class="sans lead">Either I moved it or you typed it. Both are recoverable.</p>
+  </section>
 
-  <p class="dim lead">Either I moved it or you typed it. Both are recoverable.</p>
-
-  <div class="options">
-    <a href="/"><span class="dim">cd ~</span><span>home</span></a>
-    <a href="/search"><span class="dim">grep -r</span><span>search everything</span></a>
-    <a href="/blog"><span class="dim">ls blog/</span><span>recent writing</span></a>
-  </div>
+  <section class="block">
+    <Prompt cwd="~"><a href="/">cd ~</a></Prompt>
+    <Prompt cwd="~"><a href="/blog">ls blog</a></Prompt>
+    <Prompt cwd="~"><button data-palette-open>grep -ri</button></Prompt>
+  </section>
 
   <script is:inline>
-    const p = location.pathname;
-    for (const id of ["path", "path-echo"]) {
-      const el = document.getElementById(id);
-      if (el) el.textContent = p;
-    }
+    for (const el of document.querySelectorAll("[data-path]")) el.textContent = location.pathname;
   </script>
 </Shell>
 
 <style>
-  .term { display: flex; flex-direction: column; gap: 8px; }
-  .lead { max-width: 70ch; }
-  .options { display: flex; flex-direction: column; border-top: 1px solid var(--rule); max-width: 60ch; }
-  .options a {
-    display: grid; grid-template-columns: 14ch minmax(0, 1fr); gap: 8px;
-    padding: 6px 0; border-bottom: 1px solid var(--rule-soft);
-  }
-  .options a:hover span { color: var(--bg); }
+  .block { display: flex; flex-direction: column; gap: 12px; }
+  .lead { font-size: 16px; line-height: 26px; color: var(--body); }
 </style>

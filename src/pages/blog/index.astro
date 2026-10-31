@@ -1,58 +1,23 @@
 ---
 import { getCollection } from "astro:content";
 import Shell from "../../layouts/Shell.astro";
+import Prompt from "../../components/Prompt.astro";
 import PostRow from "../../components/PostRow.astro";
-import { readingTime } from "../../lib/format";
 
-const posts = (await getCollection("blog", (p) => !p.data.draft)).sort(
-  (a, b) => +b.data.date - +a.data.date,
-);
-
-const years = [...new Set(posts.map((p) => p.data.date.getUTCFullYear()))].sort((a, b) => b - a);
-
-const tags = Object.entries(
-  posts.flatMap((p) => p.data.tags).reduce<Record<string, number>>((acc, t) => {
-    acc[t] = (acc[t] ?? 0) + 1;
-    return acc;
-  }, {}),
-).sort((a, b) => b[1] - a[1]);
+const posts = (await getCollection("blog", (p) => !p.data.draft)).sort((a, b) => +b.data.date - +a.data.date);
 ---
-<Shell title="Blog" crumb="~/blog">
-  <div slot="rail" class="rail-extra tags">
-    <span class="label">tags</span>
-    {tags.map(([t, n]) => <a href={`/blog/tag/${t}`}>{t} ({n})</a>)}
-    <a href="/rss.xml">rss</a>
+<Shell title="Blog">
+  <section class="block">
+    <Prompt cwd="~/blog" cmd="ls -l" />
+    <span class="dim">total {posts.length}</span>
+  </section>
+
+  <div class="rows">
+    {posts.map((p) => <PostRow post={p} />)}
   </div>
-
-  <h1>Words about building stuff.</h1>
-
-  {posts.length === 0 && (
-    <section class="year">
-        <div class="year-head"><span>No posts</span></div>
-    </section>
-  )}
-
-  {years.map((year) => (
-    <section class="year">
-      <div class="year-head"><span>{year}</span><span class="rule"></span></div>
-      {posts
-        .filter((p) => p.data.date.getUTCFullYear() === year)
-        .map((p) => (
-          <PostRow
-            href={`/blog/${p.id}`}
-            date={p.data.date}
-            title={p.data.title}
-            meta={readingTime(p.body ?? "")}
-          />
-        ))}
-    </section>
-  ))}
 </Shell>
 
 <style>
-  .tags { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--fg-body); }
-  .label { color: var(--fg-faint); letter-spacing: 0.08em; text-transform: uppercase; font-size: 12px; line-height: 20px; }
-  .year { display: flex; flex-direction: column; gap: 8px; }
-  .year-head { display: flex; align-items: baseline; gap: 16px; font-size: 13px; color: var(--fg-faint); }
-  .rule { flex: 1; height: 1px; background: var(--rule); }
+  .block { display: flex; flex-direction: column; gap: 12px; }
+  .rows { display: flex; flex-direction: column; margin-top: -16px; }
 </style>

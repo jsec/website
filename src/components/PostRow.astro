@@ -1,54 +1,36 @@
 ---
-import { ymd } from "../lib/format";
-interface Props { href: string; date: Date; title: string; summary?: string; meta?: string }
-const { href, date, title, summary, meta } = Astro.props;
+import type { CollectionEntry } from "astro:content";
+import { ymd, readingTime } from "../lib/format";
+interface Props { post: CollectionEntry<"blog"> }
+const { post } = Astro.props;
+const { date, title, summary } = post.data;
+const read = readingTime(post.body ?? "");
 ---
-<a href={href} class="row">
-  <time class="dim" datetime={ymd(date)}>{ymd(date)}</time>
+<a href={`/blog/${post.id}`} class="row">
+  <time class="dim wide" datetime={ymd(date)}>{ymd(date)}</time>
+  <span class="dim wide">{read}</span>
   <span class="body">
+    <span class="dim meta">{ymd(date)} · {read}</span>
     <span>{title}</span>
-    {summary && <span class="summary dim">{summary}</span>}
+    <span class="summary sans dim">{summary}</span>
   </span>
-  {meta && <span class="meta dim">{meta}</span>}
 </a>
 
 <style>
   .row {
     display: grid;
-    grid-template-columns: 12ch minmax(0, 1fr) 10ch;
+    grid-template-columns: 12ch 7ch minmax(0, 1fr);
     gap: 16px;
-    padding: 12px 8px;
-    border-bottom: 1px solid var(--rule-soft);
+    padding: 10px 0;
+    border-bottom: 1px solid var(--rule);
   }
+  .body { display: flex; flex-direction: column; min-width: 0; }
+  .summary { font-size: 15px; }
+  .meta { display: none; font-size: 13px; }
 
-  .row:hover { 
-      background: var(--bg-hover); 
-      color: var(--fg); 
-  }
-
-  .body { 
-      display: flex; 
-      flex-direction: column; 
-      min-width: 0; 
-  }
-
-  .summary { 
-      font-size: 14px; 
-  }
-
-  .meta { 
-      text-align: right; 
-  }
-
-  @media (max-width: 720px) {
-      .row { 
-          grid-template-columns: 1fr; 
-          gap: 2px; 
-          padding: 10px 4px; 
-      }
-      .meta { 
-          text-align: left; 
-          font-size: 12px; 
-      }
+  @media (max-width: 759px) {
+    .row { grid-template-columns: minmax(0, 1fr); }
+    .wide { display: none; }
+    .meta { display: block; }
   }
 </style>

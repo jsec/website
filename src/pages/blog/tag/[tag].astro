@@ -1,6 +1,7 @@
 ---
 import { getCollection } from "astro:content";
 import Shell from "../../../layouts/Shell.astro";
+import Prompt from "../../../components/Prompt.astro";
 import PostRow from "../../../components/PostRow.astro";
 
 export async function getStaticPaths() {
@@ -10,46 +11,25 @@ export async function getStaticPaths() {
     params: { tag },
     props: {
       tag,
-      posts: posts
-        .filter((p) => p.data.tags.includes(tag))
-        .sort((a, b) => +b.data.date - +a.data.date),
-      all: Object.entries(
-        posts.flatMap((p) => p.data.tags).reduce<Record<string, number>>((acc, t) => {
-          acc[t] = (acc[t] ?? 0) + 1;
-          return acc;
-        }, {}),
-      ).sort((a, b) => b[1] - a[1]),
+      posts: posts.filter((p) => p.data.tags.includes(tag)).sort((a, b) => +b.data.date - +a.data.date),
     },
   }));
 }
 
-const { tag, posts, all } = Astro.props;
+const { tag, posts } = Astro.props;
 ---
-<Shell title={`#${tag}`} description={`Posts tagged ${tag}`} crumb={`~/blog/tag/${tag}`}>
-  <div slot="rail" class="rail-extra tags">
-    <span class="label">all tags</span>
-    {all.map(([t, n]) => (
-      <a href={`/blog/tag/${t}`} class:list={{ on: t === tag }}>{t} ({n})</a>
-    ))}
-  </div>
+<Shell title={`#${tag}`} description={`Posts tagged ${tag}`}>
+  <section class="block">
+    <Prompt cwd="~/blog" cmd={`grep -l ${tag} *.md`} />
+    <span class="dim">{posts.length} {posts.length === 1 ? "match" : "matches"}</span>
+  </section>
 
-  <header class="intro">
-    <h1><span class="dim">grep -l</span> {tag}</h1>
-    <span class="dim count">{posts.length} match{posts.length === 1 ? "" : "es"}</span>
-  </header>
-
-  <div class="results">
-    {posts.map((p) => (
-      <PostRow href={`/blog/${p.id}`} date={p.data.date} title={p.data.title} summary={p.data.summary} />
-    ))}
+  <div class="rows">
+    {posts.map((p) => <PostRow post={p} />)}
   </div>
 </Shell>
 
 <style>
-  .tags { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--fg-body); }
-  .tags .on { color: var(--bg); background: var(--accent); padding: 0 4px; align-self: flex-start; }
-  .label { color: var(--fg-faint); letter-spacing: 0.08em; text-transform: uppercase; font-size: 12px; line-height: 20px; }
-  .intro { display: flex; flex-direction: column; gap: 8px; }
-  .count { font-size: 14px; }
-  .results { display: flex; flex-direction: column; border-top: 1px solid var(--rule); }
+  .block { display: flex; flex-direction: column; gap: 12px; }
+  .rows { display: flex; flex-direction: column; margin-top: -16px; }
 </style>

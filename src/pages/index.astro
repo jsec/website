@@ -2,92 +2,79 @@
 import { getCollection } from "astro:content";
 import Shell from "../layouts/Shell.astro";
 import Prompt from "../components/Prompt.astro";
-import { SITE, NOW } from "../consts";
-import { ym } from "../lib/format";
+import { ym, ymd, hash } from "../lib/format";
 
-const projects = (await getCollection("projects", (p) => p.data.featured && !p.data.draft))
-  .sort((a, b) => +b.data.date - +a.data.date);
-const work = await getCollection("work");
+const work = (await getCollection("work")).sort((a, b) => +b.data.dateStart - +a.data.dateStart);
+const now = work.find((w) => w.data.dateEnd === "Now");
+const posts = (await getCollection("blog", (p) => !p.data.draft))
+  .sort((a, b) => +b.data.date - +a.data.date)
+  .slice(0, 3);
 ---
-<Shell crumb="~/home">
-  <div slot="rail" class="rail-extra links">
-    <span class="label">elsewhere</span>
-    <a href={`mailto:${SITE.email}`}>email</a>
-    <a href={SITE.github} target="_blank" rel="noopener noreferrer">github</a>
-    <a href={SITE.linkedin} target="_blank" rel="noopener noreferrer">linkedin</a>
-    <a href="/rss.xml">rss</a>
-  </div>
-
-  <section class="intro">
-    <h1>I write backends that other engineers don't have to babysit.</h1>
-    <p>
-        I've spent the last 15 years building software in a weird mix of industries: payroll, manufacturing, mortgages, public safety, healthcare, parking, and now healthcare again.
-    </p>
-    <p>
-        My day job involves Node and TypeScript, but I find myself playing more with Python and Go these days. 
-        I care a lot about observability, keeping interfaces small, and choosing boring infrastructure when it'll do the job. If it takes an hour to figure out what a piece of code does, I'm going to want to rewrite it.
-    </p>
+<Shell>
+  <section class="block">
+    <Prompt cwd="~" cmd="whoami" />
+    <div class="whoami sans">
+      <h1>I've written enough microservices to know you don't need one.</h1>
+      <p>Fifteen years across payroll, manufacturing, mortgages, public safety, healthcare and parking.</p>
+    </div>
   </section>
 
-  <div class="facts">
-    <div class="fact">
-      <span class="label">now</span>
-      <span>{NOW.role}</span>
-      <span class="dim">{NOW.company} · since {NOW.since}</span>
-    </div>
-    <div class="fact">
-      <span class="label">shipping since</span>
-      <span>2011</span>
-      <span class="dim">across 7 industries</span>
-    </div>
-  </div>
+  {now && (
+    <section class="block">
+      <Prompt cwd="~" cmd="cat now" />
+      <div class="now">
+        <span class="dim">role</span><span>{now.data.role} @ {now.data.company}</span>
+        <span class="dim">since</span><span>{ym(now.data.dateStart)}</span>
+        <span class="dim">stack</span><span>{now.data.stack.join(", ")}</span>
+      </div>
+    </section>
+  )}
 
   <section class="block">
-    <div class="head">
-      <span>selected projects</span>
-      <a href="/projects">all →</a>
+    <Prompt cwd="~" cmd="git log --oneline -3 work" />
+    <div class="rows">
+      {work.slice(0, 3).map((w) => {
+        const range = `${ym(w.data.dateStart)} → ${ym(w.data.dateEnd)}`;
+        return (
+          <a href={`/work#${w.id}`} class="commit-row">
+            <span class="acc">{hash(w.id)}</span>
+            <span>
+              {w.data.company} <span class="dim">— {w.data.role}</span>
+              <span class="range-narrow">{range}</span>
+            </span>
+            <span class="range">{range}</span>
+          </a>
+        );
+      })}
     </div>
-    {projects.map((p) => (
-      <a href={`/projects/${p.id}`} class="card">
-        <div class="card-head"><span>{p.data.title}</span><span class="dim">{ym(p.data.date)}</span></div>
-        <span class="dim">{p.data.summary}</span>
-        <div class="tags">{Object.values(p.data.facts).map((v) => <span class="tag">{v}</span>)}</div>
-      </a>
-    ))}
   </section>
 
-  <section class="block prompt-block">
-    <Prompt />
+  <section class="block">
+    <Prompt cwd="~" cmd="ls -t blog | head -3" />
+    <div class="rows">
+      {posts.map((p) => (
+        <a href={`/blog/${p.id}`} class="post">
+          <span class="dim">{ymd(p.data.date)}</span>
+          <span>{p.data.title}</span>
+        </a>
+      ))}
+    </div>
   </section>
+
+  <Prompt cwd="~"><span class="cursor" aria-hidden="true"></span></Prompt>
 </Shell>
 
 <style>
-  .links { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--fg-body); }
-  .label { color: var(--fg-faint); letter-spacing: 0.08em; text-transform: uppercase; font-size: 12px; line-height: 20px; }
+  .block { display: flex; flex-direction: column; gap: 12px; }
+  .whoami { display: flex; flex-direction: column; gap: 12px; }
+  h1 { font-size: 26px; line-height: 36px; text-wrap: balance; }
+  .whoami p { font-size: 16px; line-height: 26px; color: var(--body); }
+  .now { display: grid; grid-template-columns: 10ch minmax(0, 1fr); color: var(--body); }
+  .rows { display: flex; flex-direction: column; }
+  .post { display: grid; grid-template-columns: 12ch minmax(0, 1fr); gap: 16px; }
+  .cursor { width: 1ch; height: 18px; background: var(--fg); }
 
-  .intro { display: flex; flex-direction: column; gap: 16px; }
-  .intro p { max-width: 74ch; color: var(--fg-body); }
-
-  .facts { display: flex; gap: 1px; background: var(--rule); border: 1px solid var(--rule); }
-  .fact { flex: 1; background: var(--bg); padding: 16px 20px; display: flex; flex-direction: column; gap: 4px; }
-
-  .block { display: flex; flex-direction: column; gap: 16px; }
-  .head {
-    display: flex; justify-content: space-between; align-items: baseline;
-    border-bottom: 1px solid var(--rule); padding-bottom: 8px;
-    font-size: 13px; color: var(--fg-dim); letter-spacing: 0.08em; text-transform: uppercase;
-  }
-  .head a { text-transform: none; letter-spacing: 0; }
-
-  .card { display: flex; flex-direction: column; gap: 6px; padding: 16px; border: 1px solid var(--rule); background: var(--bg-panel); }
-  .card:hover { border-color: var(--accent); background: var(--bg-panel); color: var(--fg); }
-  .card-head { display: flex; justify-content: space-between; gap: 16px; }
-  .tags { display: flex; gap: 8px; flex-wrap: wrap; }
-
-  .prompt-block { border-top: 1px solid var(--rule); padding-top: 24px; }
-
-  @media (max-width: 720px) {
-    h1 { font-size: 21px; line-height: 32px; }
-    .facts { flex-direction: column; }
+  @media (max-width: 759px) {
+    .rows .range-narrow { margin-bottom: 8px; }
   }
 </style>

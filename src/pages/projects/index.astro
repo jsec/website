@@ -1,51 +1,48 @@
 ---
 import { getCollection } from "astro:content";
 import Shell from "../../layouts/Shell.astro";
+import Prompt from "../../components/Prompt.astro";
 import { ym } from "../../lib/format";
 
-const projects = (await getCollection("projects", (p) => !p.data.draft)).sort(
-  (a, b) => +b.data.date - +a.data.date,
-);
+const projects = (await getCollection("projects", (p) => !p.data.draft)).sort((a, b) => +b.data.date - +a.data.date);
 ---
-<Shell title="Projects" crumb="~/projects">
-    <header class="intro">
-        <h1>Pet projects.</h1>
-        <p class="dim">When I don't get paid to build stuff.</p>
-    </header>
+<Shell title="Projects">
+  <div class="page">
+    <section class="block">
+      <Prompt cwd="~/projects" cmd="ls" />
+      <div class="ls">{projects.map((p) => <a href={`#${p.id}`} class="acc">{p.data.title}/</a>)}</div>
+    </section>
 
-  {projects.map((p) => (
-    <article class="project">
-      <div class="head">
-        <h2>{p.data.title}</h2>
-        <span class="dim">{ym(p.data.date)} · {p.data.status}</span>
-      </div>
-      <p class="dim summary">{p.data.summary}</p>
-      <dl class="facts">
-        {Object.entries(p.data.facts).map(([k, v]) => (
-          <><dt class="dim">{k}</dt><dd>{v}</dd></>
-        ))}
-      </dl>
-      <div class="links">
-        {p.data.repo && <a href={p.data.repo} class="accent">source →</a>}
-        {p.data.demo && <a href={p.data.demo} class="accent">live →</a>}
-      </div>
-    </article>
-  ))}
+    <section class="block">
+      <Prompt cwd="~/projects" cmd="cat */README" />
+      {projects.map((p) => (
+        <article id={p.id} class="card">
+          <div class="head">
+            <span class="name">{p.data.title}</span>
+            <span class="dim">{ym(p.data.date)} · {p.data.status}</span>
+          </div>
+          <p class="sans desc">{p.data.summary}</p>
+          <div class="stack dim">
+            {Object.entries(p.data.facts).map(([k, v]) => <span>{k}={v}</span>)}
+            <span class="links">
+              {p.data.demo && <a href={p.data.demo} class="acc">live →</a>}
+              {p.data.repo && <a href={p.data.repo} class="acc">source →</a>}
+            </span>
+          </div>
+        </article>
+      ))}
+    </section>
+  </div>
 </Shell>
 
 <style>
-  .project {
-    display: flex; flex-direction: column; gap: 16px;
-    border: 1px solid var(--rule); background: var(--bg-panel); padding: 24px;
-  }
-  .head { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; }
-  h2 { font-size: 19px; }
-  .summary { max-width: 74ch; }
-  .facts {
-    display: grid; grid-template-columns: 14ch minmax(0, 1fr); gap: 0 16px; margin: 0;
-    border-top: 1px solid var(--rule); padding-top: 16px; font-size: 14px;
-  }
-  .facts dd { margin: 0; }
-  .links { display: flex; gap: 24px; font-size: 14px; }
-  @media (max-width: 720px) { .project { padding: 16px; } .facts { grid-template-columns: 11ch 1fr; } }
+  .page { display: flex; flex-direction: column; gap: 32px; }
+  .block { display: flex; flex-direction: column; gap: 12px; }
+  .ls { display: flex; gap: 4ch; flex-wrap: wrap; }
+  .card { display: flex; flex-direction: column; gap: 12px; padding: 20px 0; border-bottom: 1px solid var(--rule); }
+  .head { display: flex; justify-content: space-between; gap: 16px; }
+  .name { font-weight: 500; }
+  .desc { font-size: 16px; line-height: 26px; color: var(--body); }
+  .stack { display: flex; gap: 3ch; flex-wrap: wrap; font-size: 13px; }
+  .links { margin-left: auto; display: flex; gap: 3ch; }
 </style>

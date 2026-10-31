@@ -1,0 +1,107 @@
+---
+const SUGGEST = ["fhir", "postgres", "terraform", "observability", "angular"];
+---
+<div class="palette" data-palette hidden>
+  <div role="dialog" aria-modal="true" aria-label="Search">
+    <label class="input-row">
+      <span class="acc">$</span>
+      <span class="dim">grep -ri</span>
+      <input data-palette-input spellcheck="false" autocomplete="off" placeholder="pattern" aria-label="Search" />
+      <span class="hint wide">esc</span>
+    </label>
+
+    <div class="results">
+      <div class="msg" data-palette-empty>
+        <span class="sans">Searches work history, writing and projects. Two characters minimum; I'm not indexing vowels.</span>
+        <div class="try">
+          <span>try:</span>
+          {SUGGEST.map((s) => <button class="acc" data-q={s}>{s}</button>)}
+        </div>
+      </div>
+      <div class="groups" data-palette-groups></div>
+      <div class="msg none" data-palette-none hidden>
+        <span class="dim">(exit 1)</span>
+        <span class="sans">Nothing. Either it doesn't exist or I haven't written about it yet. Statistically, the second one.</span>
+      </div>
+    </div>
+
+    <div class="foot">
+      <span class="wide">↑↓ select</span>
+      <span class="wide">↵ open</span>
+      <span class="wide">esc close</span>
+      <button class="narrow close" data-palette-close>close</button>
+      <span class="count" data-palette-count></span>
+    </div>
+  </div>
+</div>
+
+<script src="../scripts/palette.ts"></script>
+
+<!-- Global: result rows are built in palette.ts, outside Astro's scoping. -->
+<style is:global>
+  .palette {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    background: rgb(2 3 4 / 0.55);
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 12vh 16px 16px;
+  }
+  .palette[hidden] { display: none; }
+  .palette [role="dialog"] {
+    width: 100%;
+    max-width: 76ch;
+    max-height: 70vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg);
+    border: 1px solid var(--rule);
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.35);
+  }
+  .palette .input-row {
+    display: flex;
+    gap: 1ch;
+    align-items: baseline;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--rule);
+    cursor: text;
+  }
+  .palette input { flex: 1; min-width: 0; color: var(--fg); caret-color: var(--acc); }
+  .palette input::placeholder { color: var(--faint); }
+  .palette .hint { color: var(--faint); font-size: 12px; }
+  .palette .results { overflow: auto; padding: 12px 0; }
+  .palette .msg { display: flex; flex-direction: column; gap: 10px; padding: 4px 18px 8px; }
+  .palette .msg.none { gap: 6px; }
+  .palette .msg[hidden] { display: none; }
+  .palette .msg .sans { font-size: 15px; line-height: 24px; color: var(--body); }
+  .palette .try { display: flex; gap: 2ch; flex-wrap: wrap; color: var(--dim); }
+  .palette .groups { display: flex; flex-direction: column; gap: 4px; }
+  .palette .group { display: flex; flex-direction: column; padding: 8px 18px; }
+  .palette .group:hover { color: inherit; }
+  .palette .group.sel { background: var(--bg2); }
+  .palette .file { display: flex; justify-content: space-between; gap: 2ch; }
+  .palette .open { color: var(--faint); font-size: 12px; visibility: hidden; }
+  .palette .group.sel .open { visibility: visible; }
+  .palette .line { display: grid; grid-template-columns: 4ch minmax(0, 1fr); gap: 1ch; font-size: 13px; line-height: 22px; }
+  .palette .line .n { color: var(--faint); text-align: right; }
+  .palette .line .t { color: var(--body); text-wrap: pretty; }
+  .palette mark { background: var(--sel); color: var(--fg); }
+  .palette .foot {
+    display: flex;
+    gap: 3ch;
+    padding: 8px 18px;
+    border-top: 1px solid var(--rule);
+    font-size: 12px;
+    color: var(--faint);
+  }
+  .palette .count { margin-left: auto; }
+  .palette .narrow { display: none; }
+  .palette .close { color: var(--dim); min-height: 32px; }
+
+  @media (max-width: 759px) {
+    .palette .wide { display: none; }
+    .palette .narrow { display: flex; align-items: center; }
+  }
+</style>

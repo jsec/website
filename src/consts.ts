@@ -8,23 +8,8 @@ export const SITE = {
 } as const;
 
 export const NAV = [
-  { path: "/", label: "home" },
-  { path: "/work", label: "work" },
-  { path: "/blog", label: "blog" },
-  { path: "/projects", label: "projects" },
-  { path: "/search", label: "search" },
+  { path: "/", label: "~" },
+  { path: "/work", label: "~/work" },
+  { path: "/blog", label: "~/blog" },
+  { path: "/projects", label: "~/projects" },
 ] as const;
-
-export const NOW = {
-  role: "Senior Backend Engineer",
-  company: "Solace Health",
-  since: "2026-07",
-  stack: ["TypeScript", "NestJS", "Postgres", "GCP"],
-  doing:
-    "health insurance stuff",
-} as const;
-
-/** Injected at build time; surfaced in the footer. */
-export const BUILD = {
-  hash: (import.meta.env.PUBLIC_COMMIT_SHA ?? "dev").slice(0, 7),
-} as const;

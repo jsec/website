@@ -6,7 +6,7 @@ export default defineConfig({
   site: "https://jsec.online",
   integrations: [mdx(), sitemap()],
   markdown: {
-    shikiConfig: { theme: "vesper", wrap: false },
+    shikiConfig: { theme: "css-variables", wrap: false },
   },
   prefetch: { prefetchAll: true, defaultStrategy: "hover" },
 })

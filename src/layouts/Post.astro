@@ -1,72 +1,64 @@
 ---
 import type { CollectionEntry } from "astro:content";
 import Shell from "./Shell.astro";
+import Prompt from "../components/Prompt.astro";
 import { ymd, readingTime } from "../lib/format";
 
-interface Props { entry: CollectionEntry<"blog">; headings: { slug: string; text: string; depth: number }[] }
-const { entry, headings } = Astro.props;
+interface Props { entry: CollectionEntry<"blog"> }
+const { entry } = Astro.props;
 const { title, summary, date, tags } = entry.data;
 ---
-<Shell title={title} description={summary} crumb={`~/blog/${entry.id}`}>
-  <nav slot="rail" class="toc rail-extra">
-    <span class="label">contents</span>
-    {headings.filter((h) => h.depth === 2).map((h) => (
-      <a href={`#${h.slug}`}>{h.text}</a>
-    ))}
-  </nav>
+<Shell title={title} description={summary}>
+  <div class="post">
+    <Prompt cwd="~/blog" cmd={`cat ${entry.id}.md`} />
 
-  <header>
-    <h1>{title}</h1>
-    <div class="meta dim">
-      <time datetime={ymd(date)}>{ymd(date)}</time>
-      <span>{readingTime(entry.body ?? "")}</span>
-      <span>{tags.join(" · ")}</span>
-    </div>
-  </header>
+    <header>
+      <h1 class="sans">{title}</h1>
+      <span class="dim meta">
+        <time datetime={ymd(date)}>{ymd(date)}</time> · {readingTime(entry.body ?? "")}
+        {tags.length > 0 && <> · {tags.map((t, i) => <>{i > 0 && ", "}<a href={`/blog/tag/${t}`}>{t}</a></>)}</>}
+      </span>
+    </header>
 
-  <article class="prose">
-    <slot />
-  </article>
+    <article class="sans">
+      <slot />
+    </article>
 
-  <div class="tags">
-    {tags.map((t) => <a href={`/blog/tag/${t}`} class="tag">{t}</a>)}
+    <Prompt cwd="~/blog"><a href="/blog" class="dim">cd ..</a></Prompt>
   </div>
 </Shell>
 
 <style>
-  .toc { display: flex; flex-direction: column; gap: 4px; font-size: 13px; }
-  .label { color: var(--fg-faint); letter-spacing: 0.08em; text-transform: uppercase; }
-  .toc a { color: var(--fg-body); }
+  .post { display: flex; flex-direction: column; gap: 28px; }
+  header { display: flex; flex-direction: column; gap: 6px; padding-bottom: 20px; border-bottom: 1px solid var(--rule); }
+  h1 { font-size: 30px; line-height: 40px; font-weight: 500; }
+  .meta { font-size: 13px; }
 
-  header { display: flex; flex-direction: column; gap: 12px; border-bottom: 1px solid var(--rule); padding-bottom: 24px; }
-  .meta { display: flex; gap: 24px; font-size: 13px; }
-
-  .prose { display: flex; flex-direction: column; gap: 24px; max-width: var(--measure); color: var(--fg-body); }
-  .prose :global(h2) { color: var(--fg); margin-top: 16px; scroll-margin-top: 24px; }
-  .prose :global(strong), .prose :global(code) { color: var(--fg); font-weight: 400; }
-  .prose :global(a) { color: var(--accent); }
-  .prose :global(ul) { margin: 0; padding-left: 3ch; }
-  .prose :global(blockquote) {
-    margin: 0; padding-left: 3ch; border-left: 1px solid var(--rule); color: var(--fg-dim);
+  article {
+    max-width: 68ch;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    font-size: 17px;
+    line-height: 29px;
+    color: var(--body);
   }
-  .prose :global(pre) {
+  article :global(h2) { font-family: var(--mono); font-size: 15px; color: var(--fg); margin-top: 8px; }
+  article :global(h2)::before { content: "## "; color: var(--faint); }
+  article :global(strong), article :global(code) { color: var(--fg); }
+  article :global(code) { font-family: var(--mono); font-size: 0.9em; }
+  article :global(a) { color: var(--acc); }
+  article :global(ul), article :global(ol) { margin: 0; padding-left: 3ch; }
+  article :global(blockquote) { margin: 0; padding-left: 3ch; border-left: 1px solid var(--rule); color: var(--dim); }
+  article :global(pre) {
     margin: 0;
     padding: 16px 20px;
-    background: var(--bg-code) !important;
-    border: 1px solid var(--rule);
+    background: var(--bg2) !important;
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 22px;
+    color: var(--fg);
     overflow-x: auto;
-    font-size: 14px;
-    line-height: var(--lh);
   }
-  .tags { display: flex; gap: 8px; flex-wrap: wrap; border-top: 1px solid var(--rule); padding-top: 24px; }
-
-  /* Narrow: prose keeps its margin, code goes full-bleed. */
-  @media (max-width: 720px) {
-    .prose :global(pre) {
-      margin-inline: -20px;
-      border-inline: none;
-      font-size: 12px;
-      line-height: 20px;
-    }
-  }
+  article :global(pre code) { font-size: inherit; }
 </style>
